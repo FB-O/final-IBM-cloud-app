@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    {% load static %}
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+
+ <nav class="navbar navbar-light bg-light">
+    <div class="container-fluid">
+        <div class="navbar-header">
+              <a class="navbar-brand" href="{% url 'onlinecourse:index' %}">Home</a>
+        </div>
+        <ul class="nav navbar-nav navbar-right">
+            {% if user.is_authenticated %}
+            <li>
+                <a class="btn btn-link" href="#">{{ user.first_name }}({{ user.username }})</a>
+                <a class="btn btn-link" href="{% url 'onlinecourse:logout' %}">Logout</a>
+            </li>
+            {% else %}
+            <li>
+                <form class="form-inline" action="{% url 'onlinecourse:login' %}" method="post">
+                    {% csrf_token %}
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Username" name="username" >
+                        <input type="password" class="form-control" placeholder="Username" name="psw" >
+                        <button class="btn btn-primary" type="submit">Login</button>
+                        <a class="btn btn-link" href="{% url 'onlinecourse:registration' %}">Sign Up</a>
+                    </div>
+                </form>
+            </li>
+            {% endif %}
+        </ul>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    {% if exam_grade > 80 %}
+    <div class="alert alert-success">
+       <!--HINT Display passed info -->
+        <div class="row">
+            <h1>Congratulations <b>{{ user.get_username }}</b>! You succeeded</h1>
+            <div class="col-auto ml-auto"><h5 class="float-right">You got {{exam_grade|floatformat:2}}%</h5></div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-danger">
+        <!--HINT Display failed info -->
+        <div class="row">
+            <h1>You failed</h1>
+            <div class="col-auto ml-auto"><h5 class="float-right">You got {{exam_grade|floatformat:2}}%</h5></div>
+        </div>
+    </div>
+    <a class="btn btn-link text-danger" href="{% url 'onlinecourse:course_details' course_id %}">Re-test</a>
+    {% endif %}
+</div>
+<div class="container-fluid card-columns-vertical mt-1">
+    <h5 class="">Exam results</h5>
+        {% for question in questions %}
+            <div class="card mt-1">
+                {% if question.grade == 1 %}
+                    <div class="card-header">
+                        <div class="row">
+                            <h5>{{ question.text }}</h5>
+                            <div class="col-auto ml-auto">
+                                <p class="float-right text-success"><b>+ {{ question.grade }}</b></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- <div class="row"> -->
+                        {% for question_id, choices in associated_choices.items %}
+                            {% if question.id == question_id %}
+                                {% for choice in choices %}
+                                    <div class=""><h6>&#8226;{{ choice.content }}</h6></div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endfor %}
+                        <!-- </div> -->
+                    </div>
+
+                {% else %}
+                    <div class="card-header">
+                        <div class="row">
+                            <h5>{{ question.text }}</h5>
+                            <div class="col-auto ml-auto">
+                                <p class="float-right text-danger"><b>+ {{ question.grade }}</b></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- <div class="row"> -->
+                            <div class="container-fluid">
+                                <h6>Correct Answers:</h6>
+                                {% for correct_choice in question.choice_set.all %}
+                                    {% if correct_choice.is_correct %}
+                                        <div class=""><h6 class="text-success">{{correct_choice.content}}</h6></div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        <!-- </div> -->
+                        <!-- <div class="row"> -->
+                            {% for question_id, choices in associated_choices.items %}
+                                {% if question.id == question_id %}
+                                    {% for choice in choices %}
+                                        <div class=""><h6>&#8226;{{ choice.content }}</h6></div>
+                                    {% endfor %}
+                                {% endif %}
+                            {% endfor %}
+                        <!-- </div> -->
+                    </div>
+                {% endif %}     
+            </div>
+        {% endfor %}
+</div>
+</body>
+</html>
